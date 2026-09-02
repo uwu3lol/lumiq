@@ -35,6 +35,8 @@ function getMarginStatus(margin, settings) {
 
 function renderLogin() {
   const loginType = state.loginType || 'owner';
+  const isStaffLogin = loginType === 'owner' || loginType === 'co_owner';
+  const roleLabel = loginType === 'co_owner' ? 'Co-Owner Login' : loginType === 'worker' ? 'Worker Login' : 'Sign in to your account';
   
   $('#app').innerHTML = `
     <div class="login-bg"></div>
@@ -54,13 +56,14 @@ function renderLogin() {
       </div>
       <div class="login-card">
         <div class="login-toggle">
-          <button class="login-toggle-btn ${loginType === 'owner' ? 'active' : ''}" data-type="owner">Owner / Co-Owner</button>
+          <button class="login-toggle-btn ${loginType === 'owner' ? 'active' : ''}" data-type="owner">Owner</button>
+          <button class="login-toggle-btn ${loginType === 'co_owner' ? 'active' : ''}" data-type="co_owner">Co-Owner</button>
           <button class="login-toggle-btn ${loginType === 'worker' ? 'active' : ''}" data-type="worker">Worker</button>
         </div>
-        <h2 class="login-title">${loginType === 'owner' ? 'Sign in to your account' : 'Worker Login'}</h2>
-        <p class="login-desc">${loginType === 'owner' ? 'Enter your credentials to access the LUMIQ dashboard' : 'Enter your registered worker name and password'}</p>
+        <h2 class="login-title">${roleLabel}</h2>
+        <p class="login-desc">${isStaffLogin ? 'Enter your credentials to access the LUMIQ dashboard' : 'Enter your registered worker name and password'}</p>
         <form id="login-form" class="login-form">
-          ${loginType === 'owner' ? `
+          ${isStaffLogin ? `
             <div class="form-group">
               <label>Email Address</label>
               <input type="email" id="login-email" placeholder="you@lumiq.ae" required autocomplete="email" />
@@ -87,7 +90,7 @@ function renderLogin() {
           <button type="submit" class="login-submit">Sign In</button>
         </form>
         <div class="login-footer">
-          <div class="login-hint">${loginType === 'owner' ? 'Owner & Co-Owner access only' : 'Workers must be registered by the Owner'}</div>
+          <div class="login-hint">${isStaffLogin ? `${loginType === 'owner' ? 'Owner' : 'Co-Owner'} access only` : 'Workers must be registered by the Owner'}</div>
           <div class="login-brand">LUMIQ · Agency Management System</div>
         </div>
       </div>
@@ -1754,7 +1757,7 @@ async function renderSettings() {
   state.org = data.organization;
   state.settings = data.settings;
 
-  const isOwner = state.user.role === 'owner';
+  const isOwner = state.user.role === 'owner' || state.user.role === 'co_owner';
   const team = isOwner ? await api.team() : [];
 
   $('#page-content').innerHTML = `
